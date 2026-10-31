@@ -5,6 +5,7 @@ import { Provider as TooltipProvider } from "@radix-ui/react-tooltip";
 import {
   definePluginApp,
   experimental_NewThreadComposer,
+  experimental_useAppPanel,
   experimental_ProviderModelPicker,
   experimental_useProviders,
   ThreadChat,
@@ -23,6 +24,11 @@ const NewThreadComposer = experimental_NewThreadComposer;
 const ProviderModelPicker = experimental_ProviderModelPicker;
 const SuppressIncognitoActionContext = createContext(false);
 const TOGGLE_EVENT = "hmm-incognito:toggle";
+const INCOGNITO_TAB = {
+  id: "incognito-chat",
+  context: { kind: "thread" },
+  availability: "action",
+} as const;
 
 const SHORTCUT_HINT =
   typeof navigator !== "undefined" && /mac/i.test(navigator.platform ?? "")
@@ -47,7 +53,7 @@ function mountShortcutListener(): () => void {
     if (!isIncognitoShortcut(event)) return;
     event.preventDefault();
     event.stopPropagation();
-    window.dispatchEvent(new CustomEvent(TOGGLE_EVENT));
+    window.dispatchEvent(new CustomEvent(TOGGLE_EVENT, { cancelable: true }));
   };
 
   window.addEventListener("keydown", onKeyDown, { capture: true });
@@ -317,13 +323,15 @@ function IncognitoWorkspace({
       <div className="flex h-full min-h-0 flex-col">
         <PrivacyNotice onClose={onClose} titleId={titleId} />
         <div className="min-h-0 flex-1">
-          <ThreadChat
-            threadId={threadId}
-            variant="full"
-            layout="contained"
-            permissionPolicy="editable"
-            className="h-full"
-          />
+          <SuppressIncognitoActionContext.Provider value={true}>
+            <ThreadChat
+              threadId={threadId}
+              variant="full"
+              layout="contained"
+              permissionPolicy="editable"
+              className="h-full"
+            />
+          </SuppressIncognitoActionContext.Provider>
         </div>
       </div>
     );
@@ -461,6 +469,11 @@ function IncognitoPanel({ projectId }: PluginNewThreadPanelProps) {
   return <IncognitoWorkspace projectId={projectId} />;
 }
 
+function IncognitoThreadTab() {
+  const { projectId } = useBbContext();
+  return <IncognitoWorkspace projectId={projectId} />;
+}
+
 function IncognitoDialog({ projectId, onClose }: { projectId: string | null; onClose: () => void }) {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent): void {
@@ -515,6 +528,16 @@ function IncognitoComposerAction() {
   const isIncognitoComposer = useContext(SuppressIncognitoActionContext);
   const isOpen = useOverlayState() !== null;
   const { projectId: routeProjectId } = useBbContext();
+  const panel = experimental_useAppPanel();
+
+  useEffect(() => {
+    if (isIncognitoComposer) return;
+    function onToggle(event: Event): void {
+      if (!event.defaultPrevented && panel.toggleTab({ tab: INCOGNITO_TAB })) event.preventDefault();
+    }
+    window.addEventListener(TOGGLE_EVENT, onToggle, { capture: true });
+    return () => window.removeEventListener(TOGGLE_EVENT, onToggle, { capture: true });
+  }, [isIncognitoComposer, panel]);
 
   if (isIncognitoComposer) return null;
   const projectId =
@@ -533,7 +556,9 @@ function IncognitoComposerAction() {
       aria-keyshortcuts={SHORTCUT_HINT.startsWith("⌘") ? "Meta+Alt+N" : "Control+Alt+N"}
       title={`Open incognito chat (${SHORTCUT_HINT})`}
       className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      onClick={() => setOverlayState({ projectId })}
+      onClick={() => {
+        if (!panel.toggleTab({ tab: INCOGNITO_TAB })) setOverlayState({ projectId });
+      }}
     >
       <EyeOffIcon />
     </button>
@@ -552,7 +577,8 @@ function IncognitoOverlay() {
   }, [routeThreadId]);
 
   useEffect(() => {
-    function onToggle(): void {
+    function onToggle(event: Event): void {
+      if (event.defaultPrevented) return;
       setOverlayState(session === null ? { projectId } : null);
     }
     window.addEventListener(TOGGLE_EVENT, onToggle);
@@ -585,6 +611,14 @@ export function register(app: PluginAppBuilder) {
   app.slots.experimental_appOverlay({
     id: "incognito-overlay",
     component: IncognitoOverlay,
+  });
+
+  app.slots.experimental_tab({
+    ...INCOGNITO_TAB,
+    title: "Incognito chat",
+    icon: "EyeOff",
+    layout: "flush",
+    component: IncognitoThreadTab,
   });
 
   app.slots.experimental_newThreadPanelAction({

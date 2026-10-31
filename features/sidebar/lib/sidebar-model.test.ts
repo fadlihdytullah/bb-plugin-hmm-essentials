@@ -73,6 +73,17 @@ describe("sidebar model", () => {
     expect(model.personalProject?.project.id).toBe("p1");
     expect(model.personalProject?.threads.map((value) => value.id)).toEqual(["t1"]);
   });
+
+  it("leaves hidden threads out of every list", () => {
+    const model = buildSidebarModel(
+      [],
+      [project("p1", "Threads", true), project("p2", "App")],
+      [{ ...thread("t1", "p1"), isHidden: true }, { ...thread("t2", "p2"), isHidden: true }],
+    );
+
+    expect(model.personalProject?.threads).toEqual([]);
+    expect(model.looseProjects[0]?.threads).toEqual([]);
+  });
 });
 
 describe("collection ordering helpers", () => {

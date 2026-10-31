@@ -116,27 +116,29 @@ Suggestions start appearing in new threads after the plugin is enabled.
 Incognito chats give bb a short-lived private workspace for conversations that
 should not remain in the normal thread list.
 
-Click the **Eye off** CTA in the New Thread or an existing thread's composer (or choose
-**Incognito chat** from the New Thread panel fallback). The overlay keeps the
+Click the **Eye off** CTA in the New Thread or an existing thread's composer, press
+**Cmd+Option+N**, or choose **Incognito chat** from the side panel launcher. The chat
+opens as a side panel tab next to your work, and falls back to an overlay on screens
+without a side panel. It keeps the
 same project, provider, model, environment, and permission settings available
 in bb's normal composer—including provider-managed environment and machine
 inputs—then creates a hidden thread and renders bb's standard `ThreadChat`
 surface so streaming, tools, approvals, and provider controls behave normally.
 
-Set a **Default model** on the plugin's page in Tools to choose the provider,
+Set a default model under **Incognito chats** on the plugin's settings page to choose the provider,
 model, reasoning level, and service tier every new incognito chat starts with.
-The picker reads bb's live provider catalog; **Reset to BB default** returns
+The picker reads bb's live provider catalog; **Use BB default** returns
 incognito chats to bb's own defaults. You can still change the model per chat
 in the composer.
 
-The overlay uses a title-only header (close with <kbd>Esc</kbd>) and a small
-centered pixel "incognito" wordmark until the first message is sent. Its composer
-matches the modal's content width, keeps equal horizontal padding, and stays
-anchored to the bottom of the view. Long drafts scroll inside the editor, so
+The chat uses a title-only header and a small centered pixel "incognito" wordmark
+until the first message is sent. Its composer keeps equal horizontal padding and
+stays anchored to the bottom of the view. Long drafts scroll inside the editor, so
 the composer actions stay visible.
 
-Switching to another chat or closing the incognito view stops any active turn
-and deletes the temporary thread immediately. Chats left open after a disconnect or
+Pressing the shortcut again hides the side panel and keeps the chat. Closing the
+Incognito chat tab or switching to another chat stops any active turn and deletes
+the temporary thread immediately. Chats left open after a disconnect or
 crash are deleted within about 5 minutes. Reloading the plugin keeps open chats.
 
 The regular New Thread composer remains unchanged: a message sent there is a

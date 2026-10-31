@@ -19,12 +19,14 @@ describe("Hmm Incognito app", () => {
     expect(app.contentScripts).toMatchObject([{ id: "incognito-shortcut" }]);
   });
 
-  it("registers the default-model settings section", () => {
-    expect(app.settingsSections).toMatchObject([{ id: "incognito-defaults", title: "Incognito chats" }]);
+  it("opens incognito chats in a thread side panel tab", () => {
+    expect(app.tabs).toMatchObject([
+      { id: "incognito-chat", context: { kind: "thread" }, availability: "action" },
+    ]);
   });
 
-  it("does not add Incognito chat to existing-thread sidebar actions", () => {
-    expect(app.threadPanelActions).toHaveLength(0);
+  it("registers the default-model settings section", () => {
+    expect(app.settingsSections).toMatchObject([{ id: "incognito-defaults", title: "Incognito chats" }]);
   });
 
   it("keeps the Incognito chat fallback on the New Thread panel", () => {

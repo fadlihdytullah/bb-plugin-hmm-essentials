@@ -184,7 +184,7 @@ export function buildActivityPaletteGroups(
   const matchesFilter = PALETTE_FILTER_PREDICATES[options.filter ?? "all"];
   const compare = options.sort === "name" ? compareName : compareActivity;
   const candidates = threads
-    .filter((thread) => !thread.isArchived && matchesFilter(thread))
+    .filter((thread) => !thread.isArchived && !thread.isHidden && matchesFilter(thread))
     .map((thread) => ({
       thread,
       project: projectName(thread, projects),

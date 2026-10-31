@@ -35,6 +35,7 @@ export function buildSidebarModel(
   const projectById = new Map(projects.map((project) => [project.id, project]));
   const threadsByProject = new Map<string, PluginSidebarThread[]>();
   for (const thread of threads) {
+    if (thread.isHidden) continue;
     const projectThreads = threadsByProject.get(thread.projectId) ?? [];
     projectThreads.push(thread);
     threadsByProject.set(thread.projectId, projectThreads);
