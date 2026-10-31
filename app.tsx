@@ -1,0 +1,14 @@
+import { definePluginApp } from "@get-bb/plugin-sdk/app";
+import { register as registerCommands } from "./features/commands/app";
+import { register as registerIncognito } from "./features/incognito/app";
+import { register as registerOverview } from "./features/overview/app";
+import { register as registerSidebar } from "./features/sidebar/app";
+import { register as registerSuggest } from "./features/suggest/app";
+
+export default definePluginApp((app) => {
+  registerOverview(app);
+  registerCommands(app);
+  registerIncognito(app);
+  registerSidebar(app);
+  registerSuggest(app);
+});

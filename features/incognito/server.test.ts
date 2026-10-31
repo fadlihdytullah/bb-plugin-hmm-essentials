@@ -1,0 +1,191 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { createFakePluginHost, makeThreadResponse } from "@get-bb/plugin-sdk/testing";
+import plugin from "./server";
+
+const hosts: Array<ReturnType<typeof createFakePluginHost>> = [];
+
+const request = {
+  projectId: "project-1",
+  providerId: "codex",
+  model: "gpt-5",
+  reasoningLevel: "medium" as const,
+  permissionMode: "auto" as const,
+  executionInputSources: {
+    providerId: "explicit" as const,
+    model: "explicit" as const,
+    reasoningLevel: "explicit" as const,
+    permissionMode: "explicit" as const,
+  },
+  environment: { type: "project-default" as const },
+  input: [{ type: "text" as const, text: "Keep this temporary." }],
+};
+
+const providerEnvironmentRequest = {
+  ...request,
+  environment: {
+    type: "provider" as const,
+    environmentProviderId: "project-checkout",
+    inputs: null,
+    machine: { type: "existing" as const, hostId: "host-1" },
+  },
+};
+
+afterEach(async () => {
+  await Promise.all(hosts.splice(0).map((host) => host.harness.lifecycle.dispose()));
+});
+
+function createHost(options: { spawnVisibility?: "hidden" | "visible"; getVisibility?: "hidden" | "visible" } = {}) {
+  const spawnVisibility = options.spawnVisibility ?? "hidden";
+  const getVisibility = options.getVisibility ?? spawnVisibility;
+  const spawn = vi.fn(async () => makeThreadResponse({ id: "thread-incognito", visibility: spawnVisibility }));
+  const stop = vi.fn(async () => ({ ok: true as const }));
+  const remove = vi.fn(async () => ({ ok: true as const }));
+  const update = vi.fn(async () => makeThreadResponse({ id: "thread-incognito", visibility: "hidden" }));
+  const get = vi.fn(async ({ threadId }: { threadId: string }) =>
+    makeThreadResponse({ id: threadId, visibility: getVisibility }),
+  );
+  const host = createFakePluginHost({
+    pluginId: "hmm-essentials",
+    sdk: { threads: { spawn, stop, delete: remove, get, update } },
+  });
+  hosts.push(host);
+  return { host, spawn, stop, remove, update };
+}
+
+describe("Hmm Incognito server", () => {
+  it("creates a hidden attributed thread and removes it on close", async () => {
+    const { host, spawn, stop, remove, update } = createHost();
+    await plugin(host.bb);
+
+    await expect(host.harness.callRpc("session_create", { request })).resolves.toEqual({
+      threadId: "thread-incognito",
+    });
+    expect(spawn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Incognito chat",
+        origin: "plugin",
+        visibility: "hidden",
+        projectId: "project-1",
+      }),
+    );
+    expect(update).not.toHaveBeenCalled();
+
+    await expect(
+      host.harness.callRpc("session_heartbeat", { threadId: "thread-incognito" }),
+    ).resolves.toEqual({ ok: true });
+    await expect(
+      host.harness.callRpc("session_close", { threadId: "thread-incognito" }),
+    ).resolves.toEqual({ removed: true });
+    expect(stop).toHaveBeenCalledWith({ threadId: "thread-incognito" });
+    expect(remove).toHaveBeenCalledWith({
+      threadId: "thread-incognito",
+      childThreadsConfirmed: true,
+    });
+  });
+
+  it("does not let an unknown thread id trigger deletion", async () => {
+    const { host, remove } = createHost();
+    await plugin(host.bb);
+
+    await expect(
+      host.harness.callRpc("session_close", { threadId: "not-an-incognito-session" }),
+    ).resolves.toEqual({ removed: false });
+    expect(remove).not.toHaveBeenCalled();
+  });
+
+  it("repairs a host response that does not retain hidden visibility", async () => {
+    const { host, update } = createHost({ spawnVisibility: "visible" });
+    await plugin(host.bb);
+
+    await expect(host.harness.callRpc("session_create", { request })).resolves.toEqual({
+      threadId: "thread-incognito",
+    });
+    expect(update).toHaveBeenCalledWith({
+      threadId: "thread-incognito",
+      visibility: "hidden",
+    });
+  });
+
+  it("accepts the provider environment submitted by the current composer", async () => {
+    const { host, spawn } = createHost();
+    await plugin(host.bb);
+
+    await expect(
+      host.harness.callRpc("session_create", { request: providerEnvironmentRequest }),
+    ).resolves.toEqual({ threadId: "thread-incognito" });
+    expect(spawn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        environment: providerEnvironmentRequest.environment,
+        input: [{ type: "text", text: "Keep this temporary.", mentions: [] }],
+      }),
+    );
+  });
+});
+
+describe("Hmm Incognito lifecycle", () => {
+  it("leaves threads from other features alone", async () => {
+    const { host } = createHost();
+    const on = vi.spyOn(host.bb.events, "on");
+    await plugin(host.bb);
+
+    expect(on).not.toHaveBeenCalledWith("thread.created", expect.anything());
+  });
+
+  it("keeps open chats when the plugin unloads", async () => {
+    const { host, remove } = createHost();
+    await plugin(host.bb);
+
+    await host.harness.callRpc("session_create", { request });
+    await host.harness.lifecycle.dispose();
+
+    expect(remove).not.toHaveBeenCalled();
+  });
+
+  it("keeps a chat through a one minute heartbeat gap", async () => {
+    vi.useFakeTimers();
+    try {
+      const { host, remove } = createHost();
+      await plugin(host.bb);
+
+      await host.harness.callRpc("session_create", { request });
+      await vi.advanceTimersByTimeAsync(61_000);
+
+      expect(remove).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe("Hmm Incognito default model", () => {
+  it("stores, reports, and resets the default execution", async () => {
+    const { host } = createHost();
+    await plugin(host.bb);
+
+    await expect(host.harness.callRpc("defaults_get", {})).resolves.toEqual({
+      defaults: null,
+      lastUsed: null,
+    });
+
+    const defaults = { providerId: "claude-code", model: "claude-sonnet-5", reasoningLevel: "high" };
+    await expect(host.harness.callRpc("defaults_set", { defaults })).resolves.toEqual({ defaults });
+    await expect(host.harness.callRpc("defaults_get", {})).resolves.toMatchObject({ defaults });
+
+    await expect(host.harness.callRpc("defaults_set", { defaults: null })).resolves.toEqual({
+      defaults: null,
+    });
+    await expect(host.harness.callRpc("defaults_get", {})).resolves.toMatchObject({
+      defaults: null,
+    });
+  });
+
+  it("remembers the execution the last incognito chat ran with", async () => {
+    const { host } = createHost();
+    await plugin(host.bb);
+
+    await host.harness.callRpc("session_create", { request });
+    await expect(host.harness.callRpc("defaults_get", {})).resolves.toMatchObject({
+      lastUsed: { providerId: "codex", model: "gpt-5", reasoningLevel: "medium" },
+    });
+  });
+});
