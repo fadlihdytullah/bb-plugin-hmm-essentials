@@ -149,3 +149,7 @@ Incognito chat panel action receive the hidden-list behavior.
 Incognito does not make provider traffic disappear, and it cannot roll back
 workspace changes or commands an agent already ran. It is designed for
 conversation retention, not for undoing agent work.
+
+## Task tracking
+
+Hmm Essentials asks agents to keep a todo list for requests that need real work, with short step titles in your language. Greetings and quick questions skip it. How the list appears depends on the provider and BB's own timeline.
