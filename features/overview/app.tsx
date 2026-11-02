@@ -1,5 +1,5 @@
 import type { PluginAppBuilder } from "@get-bb/plugin-sdk/app";
-import { Command, EyeOff, Folder, MessageSquareReply } from "lucide-react";
+import { Command, EyeOff, Folder, ListChecks, MessageSquareReply } from "lucide-react";
 
 const FEATURES = [
   {
@@ -26,6 +26,12 @@ const FEATURES = [
     summary: "Start a hidden chat that's deleted when you close it.",
     location: "Composer",
   },
+  {
+    icon: ListChecks,
+    name: "Task checklist",
+    summary: "Follow the steps an agent is working on.",
+    location: "Above the composer",
+  },
 ];
 
 function WhatsInside() {
@@ -51,7 +57,7 @@ export function register(app: PluginAppBuilder) {
   app.slots.settingsSection({
     id: "whats-inside",
     title: "What's inside",
-    description: "Four everyday tools, on as soon as the plugin is.",
+    description: "Everyday tools, on as soon as the plugin is.",
     component: WhatsInside,
   });
 }

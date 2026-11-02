@@ -150,6 +150,13 @@ Incognito does not make provider traffic disappear, and it cannot roll back
 workspace changes or commands an agent already ran. It is designed for
 conversation retention, not for undoing agent work.
 
-## Task tracking
+## Task checklist
 
-Hmm Essentials asks agents to keep a todo list for requests that need real work, with short step titles in your language. Greetings and quick questions skip it. How the list appears depends on the provider and BB's own timeline.
+Agents get an `hmm_todo` tool and are asked to use it instead of their built-in
+todo or plan tools. When an agent starts work that needs tools, a checklist card
+appears above the thread's composer and updates as each step starts and
+finishes, with the same look for every provider. When every step is done, the
+card shows every step checked, shrinks to a one-line summary when the agent
+stops, and disappears once you send the next message. The card only shows progress; reply through the composer as usual.
+
+The tool reaches new sessions only, and an agent can still skip it.

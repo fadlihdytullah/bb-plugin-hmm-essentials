@@ -4,6 +4,7 @@ import { register as registerIncognito } from "./features/incognito/app";
 import { register as registerOverview } from "./features/overview/app";
 import { register as registerSidebar } from "./features/sidebar/app";
 import { register as registerSuggest } from "./features/suggest/app";
+import { register as registerTodo } from "./features/todo/app";
 
 export default definePluginApp((app) => {
   registerOverview(app);
@@ -11,4 +12,5 @@ export default definePluginApp((app) => {
   registerIncognito(app);
   registerSidebar(app);
   registerSuggest(app);
+  registerTodo(app);
 });

@@ -24,4 +24,9 @@ export const migrations = [
    )`,
   `CREATE INDEX IF NOT EXISTS collection_projects_order
      ON collection_projects (collection_id, position)`,
+  `CREATE TABLE IF NOT EXISTS todos (
+     thread_id TEXT PRIMARY KEY,
+     items TEXT NOT NULL,
+     updated_at INTEGER NOT NULL
+   )`,
 ];
