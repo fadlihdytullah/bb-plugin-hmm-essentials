@@ -452,6 +452,14 @@ describe("Hmm Sidebar app", () => {
     expect(slot.getByText("Build API")).toBeTruthy();
     expect(slot.queryByText("Personal note")).toBeNull();
 
+    fireEvent.contextMenu(slot.getByText("Work"));
+    expect(slot.getByRole("menuitem", { name: "Rename collection" })).toBeTruthy();
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    fireEvent.contextMenu(slot.getByText("Engineering"));
+    expect(slot.getByRole("menuitem", { name: "Delete project" })).toBeTruthy();
+    fireEvent.keyDown(document, { key: "Escape" });
+
     fireEvent.click(slot.getByRole("button", { name: "Chat threads" }));
     expect(slot.queryByText("Work")).toBeNull();
     expect(

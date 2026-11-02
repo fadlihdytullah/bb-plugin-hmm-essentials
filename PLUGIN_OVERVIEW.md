@@ -11,7 +11,8 @@ same flat list shape as BB's native sidebar.
 Create, rename, reorder, collapse, and delete Collections without changing BB
 projects themselves. Each Collection can be toggled individually, and every
 titled section (Pinned, Collections, Chats) can be hidden or shown by clicking
-its header. Drag a project onto a Collection to move it. Project action menus
+its header. Drag a project onto a Collection to move it. Project action menus,
+also opened by right-clicking a Collection or project row,
 keep Rename project and Delete project, plus Clear threads for removing
 inactive threads while preserving running, attention, and error threads.
 The personal Chats header also provides Clear chats with the same protection. Both clear

@@ -127,6 +127,7 @@ export function CollectionRow({
         <ActionMenu
           label={`Actions for ${collection.name}`}
           triggerClassName="size-5"
+          openOnParentContextMenu
           items={[
             { id: "rename", label: "Rename collection", onSelect: onRename },
             {

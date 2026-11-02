@@ -15,14 +15,27 @@ export function ActionMenu({
   items,
   children,
   triggerClassName,
+  openOnParentContextMenu = false,
 }: {
   label: string;
   items: readonly ActionMenuItem[];
   children?: ReactNode;
   triggerClassName?: string;
+  openOnParentContextMenu?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const parent = rootRef.current?.parentElement;
+    if (!openOnParentContextMenu || !parent) return;
+    const openOnContextMenu = (event: MouseEvent) => {
+      event.preventDefault();
+      setOpen(true);
+    };
+    parent.addEventListener("contextmenu", openOnContextMenu);
+    return () => parent.removeEventListener("contextmenu", openOnContextMenu);
+  }, [openOnParentContextMenu]);
 
   useEffect(() => {
     if (!open) return;

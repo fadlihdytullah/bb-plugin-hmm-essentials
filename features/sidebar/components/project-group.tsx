@@ -250,6 +250,7 @@ export function ProjectGroup({
             label={`Actions for ${project.name}`}
             items={projectItems}
             triggerClassName="size-5"
+            openOnParentContextMenu
           >
             <Icon name="MoreHorizontal" className="size-4" aria-hidden="true" />
           </ActionMenu>
