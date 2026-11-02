@@ -36,6 +36,25 @@ export default async function plugin(bb: BbPluginApi) {
     },
   });
 
+  const removeChecklist = (threadId: string): void => {
+    db.prepare("DELETE FROM todos WHERE thread_id = ?").run(threadId);
+  };
+
+  const removeOrphans = async (): Promise<void> => {
+    const rows = db.prepare("SELECT thread_id FROM todos").all() as Array<{ thread_id: string }>;
+    for (const { thread_id: threadId } of rows) {
+      try {
+        const thread = await bb.sdk.threads.get({ threadId });
+        if (thread.deletedAt !== null) removeChecklist(threadId);
+      } catch (error) {
+        if (/not.?found/i.test(String(error))) removeChecklist(threadId);
+      }
+    }
+  };
+
+  bb.events.on("thread.deleted", ({ thread }) => removeChecklist(thread.id));
+  void removeOrphans().catch((error: unknown) => bb.log.warn(`todo cleanup failed: ${String(error)}`));
+
   bb.rpc.register(rpcContract, {
     todo_get: ({ threadId }) => readChecklist(threadId),
   });

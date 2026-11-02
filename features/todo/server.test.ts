@@ -31,5 +31,11 @@ describe("hmm_todo", () => {
       items: [],
       updatedAt: 0,
     });
+
+    await host.harness.emitThreadEvent("thread.deleted", { thread: { id: "thread-1" } } as never);
+    await expect(host.harness.callRpc("todo_get", { threadId: "thread-1" })).resolves.toEqual({
+      items: [],
+      updatedAt: 0,
+    });
   });
 });

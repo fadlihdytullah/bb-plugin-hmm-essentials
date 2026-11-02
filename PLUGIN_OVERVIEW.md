@@ -159,4 +159,5 @@ finishes, with the same look for every provider. When every step is done, the
 card shows every step checked, shrinks to a one-line summary when the agent
 stops, and disappears once you send the next message. The card only shows progress; reply through the composer as usual.
 
-The tool reaches new sessions only, and an agent can still skip it.
+The tool reaches new sessions only, and an agent can still skip it. A thread's
+checklist is deleted with the thread, including incognito chats.
