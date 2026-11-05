@@ -23,6 +23,9 @@ Pin project in a project's action menu adds it to a Pinned section that stays
 fixed above Collections, just below the sidebar header, for the projects in
 focus right now. Pinned projects also stay in their usual place.
 
+When the active thread changes, the sidebar opens its Collection, project, and
+section if collapsed, highlights the row, and scrolls it into view.
+
 Thread rows continue to use BB's own navigation and actions: unread state,
 BB's own thread menu (pin, rename, archive, notification muting, and any action
 BB adds later), delete confirmation, keyboard shortcuts, and split view
@@ -157,7 +160,10 @@ todo or plan tools. When an agent starts work that needs tools, a checklist card
 appears above the thread's composer and updates as each step starts and
 finishes, with the same look for every provider. When every step is done, the
 card shows every step checked, shrinks to a one-line summary when the agent
-stops, and disappears once you send the next message. The card only shows progress; reply through the composer as usual.
+stops, and disappears once you send the next message. When the agent finishes with
+only the last step in progress, that step is checked for it; any other
+unfinished list hides when the agent stops. Writing the final reply is never a
+step. The card only shows progress; reply through the composer as usual.
 
 The tool reaches new sessions only, and an agent can still skip it. A thread's
 checklist is deleted with the thread, including incognito chats.

@@ -15,6 +15,6 @@ export const TODO_CHANGED = "todo-changed";
 export const rpcContract = defineRpcContract({
   todo_get: {
     input: z.object({ threadId: z.string().trim().min(1).max(200) }).strict(),
-    output: z.object({ items: z.array(todoItemSchema), updatedAt: z.number().int().nonnegative() }).strict(),
+    output: z.object({ items: z.array(todoItemSchema) }).strict(),
   },
 });

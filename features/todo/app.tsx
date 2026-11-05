@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { definePluginApp, useComposer, useRealtime, useRpc } from "@get-bb/plugin-sdk/app";
 import type { PluginAppBuilder } from "@get-bb/plugin-sdk/app";
 import { CircleCheck, CircleDashed, LoaderCircle } from "lucide-react";
@@ -23,9 +23,6 @@ function TodoBanner() {
   const rpc = useRpc<typeof rpcContract>();
   const threadId = composer.scope.kind === "thread" ? composer.scope.threadId : null;
   const [items, setItems] = useState<readonly TodoItem[]>([]);
-  const [updatedAt, setUpdatedAt] = useState(0);
-  const [runStartedAt, setRunStartedAt] = useState(0);
-  const wasRunning = useRef(composer.isRunning);
 
   const load = useCallback(() => {
     if (threadId === null) {
@@ -33,10 +30,7 @@ function TodoBanner() {
       return;
     }
     void rpc.call("todo_get", { threadId }).then(
-      (result) => {
-        setItems(result.items);
-        setUpdatedAt(result.updatedAt);
-      },
+      (result) => setItems(result.items),
       () => undefined,
     );
   }, [rpc, threadId]);
@@ -49,14 +43,9 @@ function TodoBanner() {
     if ((payload as { threadId?: unknown } | null)?.threadId === threadId) load();
   });
 
-  useEffect(() => {
-    if (composer.isRunning && !wasRunning.current) setRunStartedAt(Date.now());
-    wasRunning.current = composer.isRunning;
-  }, [composer.isRunning]);
-
   if (items.length === 0) return null;
   const finished = items.every((item) => item.status === "completed");
-  if (finished && updatedAt < runStartedAt) return null;
+  if (!finished && !composer.isRunning) return null;
 
   if (finished && !composer.isRunning) {
     return (

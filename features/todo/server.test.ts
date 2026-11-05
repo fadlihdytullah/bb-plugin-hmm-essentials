@@ -27,15 +27,24 @@ describe("hmm_todo", () => {
     await expect(host.harness.callRpc("todo_get", { threadId: "thread-1" })).resolves.toMatchObject({
       items: [{ title: "Read files", status: "completed" }],
     });
-    await expect(host.harness.callRpc("todo_get", { threadId: "thread-2" })).resolves.toEqual({
-      items: [],
-      updatedAt: 0,
+    await expect(host.harness.callRpc("todo_get", { threadId: "thread-2" })).resolves.toEqual({ items: [] });
+
+    await host.harness.emitThreadEvent("thread.active", { thread: { id: "thread-1" } } as never);
+    await expect(host.harness.callRpc("todo_get", { threadId: "thread-1" })).resolves.toEqual({ items: [] });
+
+    await tool.execute(
+      { items: [{ title: "Read files", status: "completed" }, { title: "Fix bug", status: "in_progress" }] },
+      context as never,
+    );
+    await host.harness.emitThreadEvent("thread.idle", { thread: { id: "thread-1" }, lastAssistantText: null } as never);
+    await expect(host.harness.callRpc("todo_get", { threadId: "thread-1" })).resolves.toEqual({
+      items: [
+        { title: "Read files", status: "completed" },
+        { title: "Fix bug", status: "completed" },
+      ],
     });
 
     await host.harness.emitThreadEvent("thread.deleted", { thread: { id: "thread-1" } } as never);
-    await expect(host.harness.callRpc("todo_get", { threadId: "thread-1" })).resolves.toEqual({
-      items: [],
-      updatedAt: 0,
-    });
+    await expect(host.harness.callRpc("todo_get", { threadId: "thread-1" })).resolves.toEqual({ items: [] });
   });
 });

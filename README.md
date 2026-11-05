@@ -33,7 +33,8 @@ bb plugin install .
 - RPC method names share one namespace across features.
 - Incognito chats are cleaned up by the heartbeat sweep after 5 minutes without a heartbeat, not on plugin unload. Features share one plugin id, so never hide threads by `originPluginId`.
 - The incognito composer action handles the shortcut and opens the side panel tab; the app overlay is the fallback for surfaces without a panel, because overlays have no side panel of their own.
-- `hmm_todo` replaces the old todo instruction. Tool names are unique across plugins, and tool changes reach new sessions only. The card compares the checklist `updatedAt` with the run start to hide a finished list from an earlier turn.
+- `hmm_todo` replaces the old todo instruction. Tool names are unique across plugins, and tool changes reach new sessions only. The server deletes a thread's checklist on `thread.active`, so each turn starts with an empty card. On `thread.idle` it checks a lone trailing `in_progress` step, so agents never call the tool after their final reply (that call forces a duplicate reply); any other unfinished list hides once the run stops.
+- The sidebar reveals the active thread from effects keyed on `activeThreadId` (Collection, section, project) and a `scrollIntoView` in `ThreadRow`, so manual collapses stick until the active thread changes.
 - Themes target `data-hmm="<feature>"`, not `data-bb-plugin`, because every feature shares one plugin id.
 - Data moved from `hmm-sidebar`, `hmm-commands`, and `hmm-incognito` on install; a backup is in `~/.bb/plugin-backups/hmm-essentials-swap/`.
 - Rebind a shortcut with `bb settings keyboard set plugin:hmm-essentials/zen Mod+Shift+Enter`.
