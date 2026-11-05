@@ -53,7 +53,7 @@ function Suggestions({ attributes, message }: PluginMessageDirectiveProps) {
 
   return (
     <div data-hmm="suggest">
-    <div className="my-2 flex w-fit max-w-full flex-col" style={{ gap: 8, marginTop: 16 }}>
+    <div className="flex w-fit max-w-full flex-col" style={{ gap: 8, marginTop: 16, marginBottom: 8 }}>
       <span className="px-1 text-xs font-medium text-muted-foreground" style={{ lineHeight: 1, margin: 0 }}>Suggested replies</span>
       <div className="flex flex-wrap rounded-[28px] border border-border bg-card shadow-sm" style={{ margin: 0, padding: 10, gap: 10 }}>
       {replies.map((text) => (
