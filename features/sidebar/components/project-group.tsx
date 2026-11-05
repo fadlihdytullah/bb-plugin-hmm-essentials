@@ -88,7 +88,7 @@ export function ProjectGroup({
   const containsActiveThread = visibleThreads.some((thread) => thread.id === activeThreadId);
   useEffect(() => {
     if (containsActiveThread) setExpandedProject(project.id);
-  }, [containsActiveThread, project.id]);
+  }, [activeThreadId, containsActiveThread, project.id]);
   const selectedThreadCount = visibleThreads.filter((thread) =>
     selectedThreadIds.has(thread.id),
   ).length;

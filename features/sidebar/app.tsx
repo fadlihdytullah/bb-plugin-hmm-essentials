@@ -94,7 +94,7 @@ function CollectionsSidebar({
 }: CollectionsViewProps) {
   const { status, threads, projects } = experimental_useSidebarThreads();
   const collectionsState = useCollections();
-  const { isCollapsed, toggle } = useCollapsedCollections();
+  const { isCollapsed, setAll, toggle } = useCollapsedCollections();
   const sidebarMode = useSidebarMode();
   const [threadQuery, setThreadQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -128,6 +128,23 @@ function CollectionsSidebar({
   useEffect(() => {
     if (activeThreadMode !== null) setSidebarMode(activeThreadMode);
   }, [activeThreadId, activeThreadMode]);
+  const activeCollectionId =
+    model.collections.find(({ projects: collectionProjects }) =>
+      collectionProjects.some((entry) =>
+        entry.threads.some((thread) => thread.id === activeThreadId && !thread.isArchived),
+      ),
+    )?.collection.id ?? null;
+  const activeInChats =
+    model.personalProject?.threads.some(
+      (thread) => thread.id === activeThreadId && !thread.isArchived,
+    ) ?? false;
+  useEffect(() => {
+    if (activeCollectionId !== null) {
+      setAll([activeCollectionId], false);
+      setCollectionsExpanded(true);
+    }
+    if (activeInChats) setChatsExpanded(true);
+  }, [activeThreadId, activeCollectionId, activeInChats, setAll]);
   const normalizedQuery = threadQuery.trim().toLocaleLowerCase();
   const browseMode = normalizedQuery.length > 0 ? null : sidebarMode;
   const matchingThreads = useMemo(() => {

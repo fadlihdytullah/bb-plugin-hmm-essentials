@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import {
   experimental_ThreadActionsContextMenu as ThreadActionsContextMenu,
   experimental_ThreadActionsMenu as ThreadActionsMenu,
@@ -122,9 +123,13 @@ export function ThreadRow({
   const isActive = thread.id === activeThreadId;
   const isHighlighted = isThreadHighlighted(thread);
   const isShimmering = isThreadShimmering(thread);
+  const rowRef = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    if (isActive) rowRef.current?.scrollIntoView?.({ block: "nearest" });
+  }, [isActive]);
 
   return (
-    <li className="group/thread relative list-none">
+    <li ref={rowRef} className="group/thread relative list-none">
       <ThreadActionsContextMenu thread={target}>
         <a
           {...splitProps}
